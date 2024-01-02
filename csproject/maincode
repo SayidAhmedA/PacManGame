@@ -1,0 +1,509 @@
+
+import queue
+import sys
+from turtle import position
+import pygame
+import random
+import copy
+from pygame.math import Vector2 as vec
+
+#pygame window sizes
+WindowWidth = 500
+WindowHeight = 650
+WindowBuffer = 50
+BoardWidth = 450
+BoardHeight = 600
+
+
+
+#fonts
+Start_window_font = 'arial black'
+
+#player settings
+StartingPos = [1,1]
+
+#enemy setting
+posit = vec(15,19)
+number = 1
+
+
+#initialising pygame 
+pygame.init()
+
+maze10=[[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+[1,0,0,1,1,1,0,0,1,1,1,1,0,0,1,1,0,0,1,1,1,1,0,0,1,1,1,0,0,1],
+[1,0,0,1,1,1,0,0,1,1,1,1,0,0,1,1,0,0,1,1,1,1,0,0,1,1,1,0,0,1],
+[1,0,0,1,1,1,0,0,1,1,1,1,0,0,1,1,0,0,1,1,1,1,0,0,1,1,1,0,0,1],
+[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+[1,0,0,1,1,1,0,0,1,0,0,1,1,1,1,1,1,1,1,0,0,1,0,0,1,1,1,0,0,1],
+[1,0,0,1,1,1,0,0,1,0,0,1,1,1,1,1,1,1,1,0,0,1,0,0,1,1,1,0,0,1],
+[1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+[1,1,1,1,1,1,0,0,1,1,1,1,0,0,1,1,0,0,1,1,1,1,0,0,1,1,1,1,1,1],
+[1,1,1,1,1,1,0,0,1,1,1,1,0,0,1,1,0,0,1,1,1,1,0,0,1,1,1,1,1,1],
+[1,1,1,1,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1],
+[1,1,1,1,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1],
+[1,1,1,1,1,1,0,0,1,0,0,1,1,1,2,2,1,1,1,0,0,1,0,0,1,1,1,1,1,1],
+[1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1],
+[0,0,0,0,0,0,0,0,0,0,0,1,0,0,4,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,1,0,3,2,5,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+[1,1,1,1,1,1,0,0,1,0,0,1,0,0,6,0,0,0,1,0,0,1,0,0,1,1,1,1,1,1],
+[1,1,1,1,1,1,0,0,1,0,0,1,1,1,1,1,1,1,1,0,0,1,0,0,1,1,1,1,1,1],
+[1,1,1,1,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1],
+[1,1,1,1,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1],
+[1,1,1,1,1,1,0,0,1,0,0,1,1,1,1,1,1,1,1,0,0,1,0,0,1,1,1,1,1,1],
+[1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+[1,0,0,1,1,1,0,0,1,1,1,1,0,0,1,1,0,0,1,1,1,1,0,0,1,1,1,0,0,1],
+[1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1],
+[1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1],
+[1,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1],
+[1,1,1,0,0,1,0,0,1,0,0,1,1,1,1,1,1,1,1,0,0,1,0,0,1,0,0,1,1,1],
+[1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+[1,0,0,1,1,1,1,1,1,1,1,1,0,0,1,1,0,0,1,1,1,1,1,1,1,1,1,0,0,1],
+[1,0,0,1,1,1,1,1,1,1,1,1,0,0,1,1,0,0,1,1,1,1,1,1,1,1,1,0,0,1],
+[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]
+
+class RPMGame:
+    def __init__(self):
+        self.screen = pygame.display.set_mode((WindowWidth, WindowHeight))
+        self.clock = pygame.time.Clock()
+        self.running = True
+        self.state = 'startwindow'
+        self.node_width = BoardWidth//30
+        self.node_height = BoardHeight//40
+        self.player = player(self, copy.copy(StartingPos))
+        self.walls = []
+        self.coins = []
+        self.pacmen_pos = []
+        self.pacmen = []
+        self.createpacmen()
+        self.Pacman = Pacman(self, posit, number)
+        self.load()
+    
+    
+    def run(self):
+        while self.running:
+            if self.state == 'startwindow':
+                self.startwindow_events()
+                self.startwindow_update()
+                self.startwindow_draw()
+            if self.state == 'gaming':
+                self.gaming_events()
+                self.gaming_update()
+                self.gaming_draw()
+            if self.state == 'gg':
+                self.gg_event()
+                self.gg_update()
+                self.gg_draw()
+            #fps
+            self.clock.tick(30)
+        pygame.quit()
+        sys.exit()
+
+    def draw_text(self, words, screen, position, size, colour, font_name, centered = False):
+        font = pygame.font.SysFont(font_name, size)
+        text = font.render(words, False, colour)
+        text_size = text.get_size()
+        #centering the starting text##
+        pos = list(position)
+        if centered: 
+            pos[0] = pos[0]-text_size[0]//2
+            pos[1] = pos[1]-text_size[1]//2
+        screen.blit(text, pos)
+    
+    #loading maze image##
+    def load(self):
+        self.background = pygame.image.load('pacmanmaze.png')
+        self.background = pygame.transform.scale(self.background, (BoardWidth, BoardHeight))
+        #walls list 
+        for yidx, line in enumerate(maze10):
+            for xidx, char in enumerate(line):
+                if char == 1:
+                    self.walls.append(vec(xidx, yidx))
+
+                elif char == 0:
+                    self.coins.append(vec(xidx, yidx))
+
+                elif char == 2:
+                    self.pacmen_pos.append(vec(xidx, yidx))
+                
+                elif char == 3:
+                    self.pacmen_pos.append(vec(xidx, yidx))
+                    
+                    
+
+    def createpacmen(self):
+        for idx, posit in enumerate(self.pacmen_pos):
+            self.pacmen.append(Pacman(self, posit, idx))
+
+
+    def reset(self):
+        self.player.lives = 3  # setting lives back to 3
+        self.coins = []   # emptying coins list
+        self.player.score = 778
+        for yidx, line in enumerate(maze10):
+            for xidx, char in enumerate(line):
+                if char == 0:
+                    self.coins.append (vec(xidx, yidx))   #adding the coins back fresh
+        self.state = "gaming"     #setting to playing again
+
+
+
+
+    ##drawing lines to show each node to layout grid#
+#    def draw_maze(self):
+#        for x in range(BoardWidth//self.node_width):
+#            pygame.draw.line(self.background, (107,107,107), (x*self.node_width, 0), (x*self.node_width, BoardHeight))
+#       
+#        for x in range(BoardHeight//self.node_width):
+#            pygame.draw.line(self.background, (107,107,107), (0, x*self.node_height), (BoardWidth, x*self.node_height))
+
+     ##showing where the coins are###
+      
+#        for coin in self.coins:
+#           pygame.draw.rect(self.background, (167, 179, 34), (coin.x*self.node_width, coin.y*self.node_height, self.node_width, self.node_height))
+
+################startwindow###################################
+    def startwindow_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            ###key used to start game##
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                self.state= 'gaming'
+
+    def startwindow_update(self):
+        pass
+    
+    def startwindow_draw(self):
+        ####colour of background##
+        self.screen.fill((0,0,0))
+        ##start game text (text, position, text size, colour, centering)##
+        self.draw_text('PRESS SPACE TO START GAME', self.screen, (225,300), 16,(255,0,0), Start_window_font, centered= True)
+        self.draw_text('HIGH SCORE =', self.screen,(180,400), 16,(255,255,255), Start_window_font, centered= True)
+        pygame.display.update()
+
+    def draw_coins(self):
+        for coin in self.coins:
+            pygame.draw.circle(self.screen, (167, 179, 34), (int(coin.x*self.node_width)+self.node_width//2+WindowBuffer//2, (coin.y*self.node_height)+self.node_height//2+WindowBuffer//2), 5)
+
+#######################################################
+###################ingame functions###################
+    
+    def gaming_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    self.player.move(vec(-1,0))
+                if event.key == pygame.K_RIGHT:
+                    self.player.move(vec(1,0))
+                if event.key == pygame.K_UP:
+                    self.player.move(vec(0,-1))
+                if event.key == pygame.K_DOWN:
+                    self.player.move(vec(0,1))
+
+    def gaming_update(self):
+        self.player.update()
+       #for pacman in self.pacmen:
+       #     pacman.update()
+        self.Pacman.update()
+
+       
+        if self.Pacman.grid_pos == self.player.maze_pos:
+            self.player.lives = self.player.lives - 1
+            if self.player.lives == 0:
+                self.state = "gg"
+            #else:
+                #self.player.pixel_pos 
+                #self.player.direction *= 0
+
+
+    def gaming_draw(self):
+        self.screen.fill((0,0,0))
+        self.screen.blit(self.background, (WindowBuffer//2, WindowBuffer//2))
+#part of the nodes func        
+#        self.draw_maze()
+        self.draw_coins()
+        self.draw_text('CURRENT SCORE = {}'.format(self.player.score), self.screen, [10,1], 16, (225,225,225), Start_window_font)
+        self.player.draw()
+        #for pacman in self.pacmen:
+        self.Pacman.draw()
+        #    pacman.draw()
+        pygame.display.update()
+
+
+
+####gameover stuff####
+    def gg_event(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            ###key used to quit game##
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                self.running = False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_TAB:
+                self.reset()
+
+    def gg_update(self):
+        pass
+
+    def gg_draw(self):
+        self.screen.fill((0,0,0))
+        self.draw_text('Game Over', self.screen, (225,150), 26,(255,0,0), Start_window_font, centered= True)
+        self.draw_text('PRESS SPACE TO RESTART GAME', self.screen, (225,300), 16,(255,0,0), Start_window_font, centered= True)
+        self.draw_text('PRESS TAB TO EXIT GAME', self.screen,(220,400), 16,(255,255,255), Start_window_font, centered= True)
+        pygame.display.update()
+
+
+
+
+
+
+
+
+
+
+
+
+####player###############
+class player:
+    def __init__(self, RPMGame, Startingpos):
+        self.RPMGame = RPMGame
+        self.maze_pos = vec(Startingpos[0], StartingPos[1])
+        self.pixel_pos = vec((self.maze_pos.x*self.RPMGame.node_width) + WindowBuffer//2+self.RPMGame.node_width//2, (self.maze_pos.y*self.RPMGame.node_height) + WindowBuffer//2+self.RPMGame.node_height//2)
+        self.direction = vec(1,0)
+        self.stored_direction = None
+        self.notwallmove = True
+        self.score = 778
+        self.speed = 1.5
+        self.lives = 3
+
+    def update(self):
+        if self.notwallmove:
+            self.pixel_pos += self.direction*self.speed
+
+        if self.stayinginlines():
+                if self.stored_direction != None:
+                    self.direction = self.stored_direction
+                self.notwallmove = self.movezone()
+   
+        #grid pos compared to pixel pos
+        self.maze_pos[0] = (self.pixel_pos[0] - WindowBuffer//2)//self.RPMGame.node_width 
+        self.maze_pos[1] = (self.pixel_pos[1] - WindowBuffer//2)//self.RPMGame.node_height 
+
+        if self.touchcoin():
+            self.takecoin()
+
+    def draw(self):
+        pygame.draw.circle(self.RPMGame.screen, (127, 0, 255), (int(self.pixel_pos.x), int(self.pixel_pos.y)), (self.RPMGame.node_width//2-1))
+        
+        #adding lives (printing on the screen - colour - position - radius)
+        for x in range(self.lives):
+            pygame.draw.circle(self.RPMGame.screen, (155, 0, 0), (12 + 22*x, 638), 10)
+
+#box to show which node you are on        pygame.draw.rect(self.RPMGame.screen, (255,1,1), (self.maze_pos[0]*self.RPMGame.node_width + WindowBuffer//2, self.maze_pos[1]*self.RPMGame.node_height + WindowBuffer//2, self.RPMGame.node_width, self.RPMGame.node_height), 1)     
+
+    def touchcoin(self):
+        if self.maze_pos in self.RPMGame.coins:
+            return True
+        else:
+            return False
+
+    def takecoin(self):
+        self.RPMGame.coins.remove(self.maze_pos)
+        self.score=self.score-1
+
+    def move(self, direction):
+        self.stored_direction = direction
+    
+    def stayinginlines(self):
+        if int(self.pixel_pos.x + WindowBuffer//2) % self.RPMGame.node_width == 0:
+            if self.direction == vec(1,0) or self.direction == vec(-1,0):
+                return True
+        if int(self.pixel_pos.y + WindowBuffer//2) % self.RPMGame.node_height == 0:
+            if self.direction == vec(0,1) or self.direction == vec(0, -1):
+                return True
+
+    #stops movement in walls#
+    def movezone(self):
+        for wall in self.RPMGame.walls:
+            if vec(self.maze_pos+self.direction) == wall:
+                return False
+        return True
+
+
+
+
+##############################################################################
+
+class Pacman:
+    def __init__(self, RPMGame, posit, number):
+        self.RPMGame = RPMGame
+        self.grid_pos = posit
+        self.pixel_pos = self.get_pix_pos()
+        self.radius = self.RPMGame.node_width//2.3
+        self.number = number
+        self.stored_direction = None
+        self.colour = self.set_colour()
+        self.pacdirection = vec(1, 0)
+        self.polymorph = self.set_polymorph()
+        self.target = None
+      
+    def update(self):
+        if self.target != self.grid_pos:
+            self.target = self.set_target()
+            self.pixel_pos += self.pacdirection
+            if self.pactimetomove():
+                self.pacmove()
+
+        self.grid_pos[0] = (self.pixel_pos[0] - WindowBuffer//2)//self.RPMGame.node_width 
+        self.grid_pos[1] = (self.pixel_pos[1] - WindowBuffer//2)//self.RPMGame.node_height 
+
+        if self.pactimetomove():
+            if self.stored_direction != None:
+                self.direction = self.stored_direction
+          
+
+    def draw(self):
+        #self - colour - position - radius 
+            pygame.draw.circle(self.RPMGame.screen, self.colour, (int(self.pixel_pos.x), (self.pixel_pos.y)), self.radius)
+
+    def set_target(self):
+        if self.polymorph == "smart":
+            return self.RPMGame.player.pixel_pos
+        else:
+            if self.RPMGame.player.pixel_pos[0] > 30//2 and self.RPMGame.player.pixel_pos[1] > 40//2:
+                return vec(1, 1)
+            if self.RPMGame.player.pixel_pos[0] > 30//2 and self.RPMGame.player.pixel_pos[1] < 40//2:
+                return vec(1, 38)
+            if self.RPMGame.player.pixel_pos[0] < 30//2 and self.RPMGame.player.pixel_pos[1] > 40//2:
+                return vec(28, 1)
+            else:
+                return vec(28, 38)
+
+
+
+    def get_pix_pos(self):
+        return vec((self.grid_pos.x*self.RPMGame.node_width) + WindowBuffer//2+self.RPMGame.node_width//2, (self.grid_pos.y*self.RPMGame.node_height) + WindowBuffer//2+self.RPMGame.node_height//2)
+
+    #same as staying in lines for the player
+    def pactimetomove(self):
+        if int(self.pixel_pos.x + WindowBuffer//2) % self.RPMGame.node_width == 0:
+            if self.pacdirection == vec(1,0) or self.pacdirection == vec(-1,0):
+                return True
+        if int(self.pixel_pos.y + WindowBuffer//2) % self.RPMGame.node_height == 0:
+            if self.pacdirection == vec(0,1) or self.pacdirection == vec(0, -1):
+                return True
+        else:
+            return False
+
+            
+    
+    def set_polymorph(self):
+        if self.number == 1:
+            return "random"
+        if self.number == 2:
+            return "smart"
+
+    def pacmove(self):
+        if self.polymorph == "random":
+            self.pacdirection = self.random_direction()
+        if self.polymorph == "smart":
+            self.pacdirection = self.get_path(self.target)
+
+    def random_direction(self):
+        while True:
+            numb = random.randint(-2, 1)
+            if numb == -2:
+                x_dir, y_dir = 1, 0
+            elif numb == -1 :
+                x_dir, y_dir = 0, 1
+            elif numb == 0:
+                x_dir, y_dir = -1, 0
+            else:
+                x_dir, y_dir = 0, -1
+            
+            next_pacpos = vec(self.grid_pos.x + x_dir, self.grid_pos.y + y_dir)
+            if next_pacpos not in self.RPMGame.walls:
+                break
+        return vec(x_dir, y_dir)
+
+
+
+    def set_colour(self):
+        if self.number == 0:
+            return (255, 255, 255)
+        if self.number == 1:
+            return (155, 0, 0)
+        if self.number == 2:
+            return (0, 155, 0)
+    
+
+    def get_path(self, target):
+        nextnode = self.findnextnode(target)
+        xdir = nextnode[0] - self.grid_pos[0]
+        ydir = nextnode[1] - self.grid_pos[1]
+        return vec(xdir, ydir)
+
+    def findnextnode(self, target):
+        path = self.search([int(self.grid_pos.x), int(self.grid_pos.y)], [int(target[0]), int(target[1])])
+        return path[1]
+
+
+    def search(self, start, target):
+        grid = [[0 for x in range(30)] for x in range(40)]
+        for cell in self.RPMGame.walls:
+            if cell.x <30 and cell.y <40:
+                grid[int(cell.y)][int(cell.x)] = 1
+        ##removing walls from search above##
+
+        queue = [start]
+        path = []
+        visited = []
+        while queue: ##is not empty continue loop##
+            current = queue[0]
+            queue.remove(queue[0])
+            visited.append(current) ##removes the current node from the queue and adds it to the visisted
+            if current == target:  ###if the enemy is at the target then it breaks from the while.
+                break
+            else:
+                adjacentnode = [[0, -1],[1, 0],[0, 1],[-1, 0]] ###adjacent nodes
+                for adjacent in adjacentnode:
+                    ##getting to next cell#
+                    if adjacent[0]+current[0] >= 0 and adjacent[0] + current[0] <len(grid[0]):
+                        if adjacent[1]+current[1] >= 0 and adjacent[1] + current[1] <len(grid):
+                            nextnode = [adjacent[0] + current[0], adjacent[1] + current[1]]
+                            if nextnode not in visited:
+                                if grid[nextnode[1]][nextnode[0]] != 1: #if not a wall then append#
+                                    queue.append(nextnode)
+                                    path.append({"Current": current, "next": nextnode}) ###dictionary  (current pos - next cell) to backtrack##
+
+
+ #backtracking
+        shortest = [target]
+        while target != start:
+            for step in path:
+                if step["Next"] == target:
+                    target = step["Current"]
+                    shortest.insert(0, step["Current"])
+
+        return shortest
+  
+
+
+
+    
+
+
+game = RPMGame()
+game.run()
